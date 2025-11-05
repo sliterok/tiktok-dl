@@ -3,7 +3,7 @@ import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import { createInterface } from "readline";
 import { Bot, InputFile } from "grammy";
-import { CustomFile } from 'telegram/client/uploads';
+import { CustomFile } from 'telegram/client/uploads.js';
 import { downloadVideo } from './downloader';
 import { waitForVideo, resolveVideo } from './helpers';
 import { inspect } from 'util';
@@ -55,7 +55,7 @@ export async function initTg() {
 
     bot.on('message:text', async (ctx) => {
         if (!allowList.includes(ctx.message.from.id)) {
-            return ctx.reply("Self host yourself at https://github.com/sliterok/tiktok-dl")
+            return ctx.reply("Self-host yourself at https://github.com/sliterok/tiktok-dl")
         }
 
         const text = ctx.message.text
