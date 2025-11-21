@@ -13,7 +13,6 @@ const bot = new Bot(process.env.TG_BOT_TOKEN!);
 const apiId = Number(process.env.TG_API_ID ?? 0);
 const apiHash = process.env.TG_API_HASH ?? "";
 const stringSession = new StringSession(process.env.TG_SESSION ?? "");
-const allowList = process.env.TG_USER_ALLOWLIST!.split(',').map(userId => parseInt(userId))
 
 const rl = createInterface({
     input: process.stdin,
@@ -41,6 +40,16 @@ export async function initTg() {
         onError: (err) => console.log(err),
     });
 
+    const me = await bot.api.getMe()
+
+    async function sendVideo(ab: ArrayBuffer, caption: string) {
+        const buffer = Buffer.from(ab)
+        const file = new CustomFile("video.mp4", buffer.length, '', buffer);
+        const target = await client.getInputEntity('@' + me.username)
+
+        client.sendFile(target, { file, caption })
+    }
+
     bot.on('message:video', async (ctx) => {
         console.log(inspect(ctx, { depth: null }))
         const caption = ctx.message.caption
@@ -54,14 +63,10 @@ export async function initTg() {
     })
 
     bot.on('message:text', async (ctx) => {
-        if (!allowList.includes(ctx.message.from.id)) {
-            return ctx.reply("Self-host yourself at https://github.com/sliterok/tiktok-dl")
-        }
-
         const text = ctx.message.text
         if (!text.startsWith("https://")) return
 
-        ctx.reply('Downloading...')
+        await ctx.replyWithChatAction("upload_video")
         const download = await downloadVideo(text)
         if (!download) return
 
@@ -83,14 +88,6 @@ export async function initTg() {
     })
 
     run(bot)
-}
-
-async function sendVideo(ab: ArrayBuffer, caption: string) {
-    const buffer = Buffer.from(ab)
-    const file = new CustomFile("video.mp4", buffer.length, '', buffer); // Or path to file
-    const target = await client.getInputEntity('@free_tiktok_downloaderbot')
-
-    client.sendFile(target, { file, caption })
 }
 
 initTg()

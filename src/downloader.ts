@@ -15,6 +15,7 @@ export async function downloadVideo(url: string): Promise<{
     if (videoUrl) {
         const video = await fetch(videoUrl);
         if (!video.body) {
+            console.log(video)
             console.warn("No body in TikTok response")
             return
         }
