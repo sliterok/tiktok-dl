@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "node esbuild.mjs",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "reinit": "pm2 restart tiktok-dl --update-env"
   },
   "type": "module",
   "keywords": [],

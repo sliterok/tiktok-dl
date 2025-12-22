@@ -1,4 +1,6 @@
 import 'dotenv/config'
+import { spawn } from "child_process";
+import { mkdtemp, readFile, rm, writeFile } from "fs/promises";
 import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import { createInterface } from "readline";
@@ -8,11 +10,13 @@ import { downloadVideo } from './downloader';
 import { waitForVideo, resolveVideo } from './helpers';
 import { inspect } from 'util';
 import { run } from "@grammyjs/runner";
+import { mergePhotosWithMusic } from './slideshow';
 
 const bot = new Bot(process.env.TG_BOT_TOKEN!);
 const apiId = Number(process.env.TG_API_ID ?? 0);
 const apiHash = process.env.TG_API_HASH ?? "";
-const stringSession = new StringSession(process.env.TG_SESSION ?? "");
+const session = process.env.TG_SESSION ?? "";
+const stringSession = new StringSession(session);
 
 const rl = createInterface({
     input: process.stdin,
@@ -39,6 +43,9 @@ export async function initTg() {
             ),
         onError: (err) => console.log(err),
     });
+
+    if (!session) console.log('Store this session to TG_SESSION var', client.session.save());
+
 
     const me = await bot.api.getMe()
 
@@ -83,6 +90,12 @@ export async function initTg() {
             await ctx.replyWithMediaGroup(photos?.map(p => ({ type: "photo", media: new InputFile(Buffer.from(p)) })))
             if (music) {
                 await ctx.replyWithAudio(new InputFile(Buffer.from(music)))
+                try {
+                    const slideshowVideo = await mergePhotosWithMusic(photos, music)
+                    await ctx.replyWithVideo(new InputFile(slideshowVideo))
+                } catch (error) {
+                    console.error("Failed to build slideshow video", error)
+                }
             }
         }
     })
