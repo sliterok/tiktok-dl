@@ -87,7 +87,7 @@ export async function initTg() {
             await ctx.replyWithVideo(fileInfo.fileId)
             await bot.api.deleteMessage(fileInfo.chatId, fileInfo.messageId)
         } else if (photos) {
-            for (let i = 0; i < photos.length; i + 10) {
+            for (let i = 0; i < photos.length; i += 10) {
                 const batch = photos.slice(i, i + 10);
                 await ctx.replyWithMediaGroup(batch?.map(p => ({ type: "photo", media: new InputFile(Buffer.from(p)) })))
             }
